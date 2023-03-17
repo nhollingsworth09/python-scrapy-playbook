@@ -47,8 +47,8 @@ class ChocolateSpider(scrapy.Spider):
 
        #next_page = response.css('[rel="next"] ::attr(href)').get()
 
-       #if next_page is not None:
-       #    next_page_url = 'https://www.chocolate.co.uk' + next_page
-       #    yield response.follow(get_proxy_url(next_page_url), callback=self.parse)
+       if next_page is not None:
+           next_page_url = 'https://www.chocolate.co.uk' + next_page
+           yield response.follow(get_proxy_url(next_page_url), callback=self.parse)
            
 
