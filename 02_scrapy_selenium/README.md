@@ -4,27 +4,18 @@ Originally designed for automated testing of web applications, as websites becam
 
 For years, Selenium was the most popular headless browser for web scraping (especially in Python), however, since the launch of Puppeteer and Playwright it has begun to fall out of favour.
 
-To use Selenium in your Scrapy spiders you can use the Python Selenium library directly or else use [scrapy-selenium](https://github.com/clemfromspace/scrapy-selenium).
 
-The first option of importing Selenium into your Scrapy spider works but isn't the cleanest implementation.
-
-As a result, scrapy-selenium which was a Playwright style integration with Scrapy, making it much easier to use.
-
-**Note**: However, scrapy-selenium hasn't been maintained in over 2 years.
-
-Getting setup with Scrapy Selenium can be easy, but also a bit tricky as you need to install and configure a browser driver for **scrapy-selenium** to use.
-
-## 1. Install Scrapy Selenium
+## 1. Install Selenium
 To get started we first need to install scrapy-selenium by running the following command:
 
 ```
-pip install scrapy-selenium
+pip install selenium
 ```
 
 **Note**: You should use Python Version 3.6 or greater. You also need one of the Selenium compatible browsers.
 
 ## 2. Install ChromeDriver
-To use scrapy-selenium you first need to have installed a Selenium compatible browser.
+To use selenium you first need to have installed a Selenium compatible browser.
 
 In this guide, we're going to use ChromeDiver which you can download from [here](https://chromedriver.chromium.org/downloads).
 
@@ -50,38 +41,63 @@ We should put the downloaded **chromedriver.exe** in our Scrapy project here:
 ```
 
 ## 3. Integrate Scrapy Selenium Into Project
-To integrate scrapy-selenium, we need to update our ```settings.py``` file with the following settings.
+To integrate selenium, we need to create a new middleware that handles JavaScript websites using Selenium. We need to update our ```middlewares.py```, ```settings.py```, and ```<spider>.py``` files.
 
+### ```middlewares.py```
+Inspiration from: https://stackoverflow.com/posts/31186730/revisions
+
+Once you return that ```HtmlResponse``` (or a ```TextResponse``` if that's what you really want), Scrapy will cease processing downloaders and drop into the spider's parse method:
+
+If it returns a Response object, Scrapy won’t bother calling any other ```process_request()``` or ```process_exception()``` methods, or the appropriate download function; it’ll return that response. The ```process_response()``` methods of installed middleware is always called on every response.
+
+In this case, you can continue to use your spider's ```parse``` method as you normally would with HTML, except that the JS on the page has already been executed.
 ```
-## settings.py
+#middlewares.py
 
-# for chrome driver 
-from shutil import which
-  
-SELENIUM_DRIVER_NAME = 'chrome'
-SELENIUM_DRIVER_EXECUTABLE_PATH = which('chromedriver')
-SELENIUM_DRIVER_ARGUMENTS=['--headless']  
-  
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selscraper.driver_path import CHROMEDRIVER_PATH
+
+WINDOW_SIZE = "1920,1080"
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
+
+class JSChromeMiddleware(object):
+    def process_request(self, request, spider):
+        driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
+                                  chrome_options=chrome_options)
+        
+        driver.get(request.url)
+    
+        body = driver.page_source
+        return HtmlResponse(driver.current_url, body=body, encoding='utf-8', request=request)
+```
+
+### ```settings.py```
+```
+#settings.py
+
 DOWNLOADER_MIDDLEWARES = {
-     'scrapy_selenium.SeleniumMiddleware': 800
-     }
+    "selscraper.middlewares.JSChromeMiddleware": 430,
+}
 ```
 
-## 4. Update Our Spiders To Use Scrapy Selenium
-Then to use Scrapy Selenium in our spiders to render the pages we want to scrape we need to change the default ```Request``` to ```SeleniumRequest``` in our spiders.
-
+### ```<spider>.py```
 ```
-## settings.py
+#<spider>.py: Example scrapes quotes from a JS website
+
 import scrapy
-from selenium_demo.items import QuoteItem 
-from scrapy_selenium import SeleniumRequest
+from selscraper.items import QuoteItem 
 
 class QuotesSpider(scrapy.Spider):
-    name = 'quotes'
+    name = 'selspider'
 
     def start_requests(self):
-        url = 'https://quotes.toscrape.com/js/'
-        yield SeleniumRequest(url=url, callback=self.parse)
+        start_url = 'https://quotes.toscrape.com/js/'      
+        yield scrapy.Request(url=start_url, callback=self.parse)
 
     def parse(self, response):
         quote_item = QuoteItem()
@@ -90,8 +106,9 @@ class QuotesSpider(scrapy.Spider):
             quote_item['author'] = quote.css('small.author::text').get()
             quote_item['tags'] = quote.css('div.tags a.tag::text').getall()
             yield quote_item
+
 ```
 
-Now all our requests will be made through our Splash server and any javascript on the page will be rendered.
+# Sample Project
 
-For a deeper dive into Scrapy Selenium then be sure to check our [Scrapy Selenium guide](https://scrapeops.io/python-scrapy-playbook/scrapy-selenium/), and the [official docs](https://github.com/clemfromspace/scrapy-selenium).
+We will be using [this](https://www.youtube.com/watch?v=lTypMlVBFM4&ab_channel=JohnWatsonRooney) video as reference for our sample project with **Scrapy + Selenium** while following [this](https://medium.com/swlh/web-scraping-with-selenium-scrapy-9d9c2e9d83b1) article for integrating the two packages.

@@ -14,7 +14,6 @@ We do this by using Scrapy itemloaders (preprocessors). Additionally, we'll be u
 """
 
 import scrapy
-import http.client
 from chocolatescraper.itemloaders import ChocolateProductLoader
 from chocolatescraper.items import ChocolateProduct
 from chocolatescraper.api_key import API_KEY
@@ -23,8 +22,6 @@ def get_proxy_url(url):
     proxy_url = f'https://api.scrapingant.com/v2/general?url={url}&x-api-key={API_KEY}'
     return proxy_url
     
-conn = http.client.HTTPSConnection("api.scrapingant.com") 
-
 class ChocolateSpider(scrapy.Spider):
 
    # The name of the spider
