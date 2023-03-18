@@ -6,4 +6,4 @@ As a *rough* workaround (inspired by [this](https://medium.com/swlh/web-scraping
 
 This creates two issues:
 - No longer able to automatically change ```user-agent``` with **scrapy-user-agents** package.
-- Unused middleware code needs to be cleared. 
+- ~~Unused middleware code needs to be cleared.~~ Cleaned up.

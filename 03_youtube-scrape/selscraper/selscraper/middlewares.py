@@ -7,30 +7,6 @@ from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
-from scrapy.http import HtmlResponse
-from scrapy.selector import Selector
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selscraper.driver_path import CHROMEDRIVER_PATH
-
-WINDOW_SIZE = "1920,1080"
-
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
-
-class JSChromeMiddleware(object):
-    def process_request(self, request, spider):
-        driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
-                                  chrome_options=chrome_options)
-        
-        driver.get(request.url)
-        wait = WebDriverWait(driver, 10)
-        
-        body = driver.page_source
-        return HtmlResponse(driver.current_url, body=body, encoding='utf-8', request=request)
         
 class SelscraperSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,

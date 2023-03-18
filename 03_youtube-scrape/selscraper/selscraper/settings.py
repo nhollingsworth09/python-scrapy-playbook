@@ -53,7 +53,6 @@ DOWNLOADER_MIDDLEWARES = {
 #    "selscraper.middlewares.SelscraperDownloaderMiddleware": 543,
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
     "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
-    "selscraper.middlewares.JSChromeMiddleware": 430,
 }
  
 # Enable or disable extensions
