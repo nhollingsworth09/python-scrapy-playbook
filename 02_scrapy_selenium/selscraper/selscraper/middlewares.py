@@ -21,7 +21,7 @@ chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
 class JSChromeMiddleware(object):
     def process_request(self, request, spider):
         driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
-                                  chrome_options=chrome_options)
+                                  options=chrome_options)
         
         driver.get(request.url)
     
