@@ -12,7 +12,7 @@ This creates two issues:
 
 **Revisiting** this experiment to attempt integrating Selenium within Scrapy ```middlewares.py```. Earlier issues could have been caused due to utilizing CSS selectors, whereas the XPath selectors could be a better option. 
 
-##Fixed it! XPath was the solution. 
+## Fixed it! XPath was the solution. 
 ```
 [
 {"title": "Don't Forget to Look HERE when Scraping Data", "views": "1.8K views", "when": "3 days ago"},
